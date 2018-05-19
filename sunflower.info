@@ -1,0 +1,4 @@
+name = Sunflower
+description = An abstract simulation of a sunflower’s growth pattern using the HTML canvas element and a little math.
+core = 7.x
+package = Rob Ireton
