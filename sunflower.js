@@ -1,105 +1,134 @@
-'use strict';
-
-let sunflower
+"use strict";
 
 Drupal.behaviors.sunflower = {
   attach: (context, settings) => {
-    const canvas       = document.getElementById('canvas')
     const controlStep  = document.getElementById('controlStep')
     const controlPause = document.getElementById('controlPause')
     const controlStart = document.getElementById('controlStart')
     const controlBegin = document.getElementById('controlBegin')
     const controlEnd   = document.getElementById('controlEnd')
-    const buttons      = document.getElementById('buttons')
+    const sunflower    = new Sunflower(document.getElementById('sunflower-canvas'), 8)
+    let timer
 
-    sunflower = new Sunflower(Math.floor(0.94*Math.min(canvas.width, canvas.height)/2), 8)
-
-    if (controlStep.type == 'range') controlStep.style.display = 'block'
     controlStep.max = sunflower.limit
-    controlStep.value = Math.floor(0.38 * sunflower.limit)
-    controlStep.style.width = canvas.width + 'px'
-    controlPause.style.display = 'none'
-    buttons.style.width = canvas.width + 'px'
-    buttons.style.display = 'block'
+    controlStep.value = sunflower.step
 
-    controlStep.addEventListener('change', () => {sunflower.draw()}, false)
-    controlPause.addEventListener('click', function () {this.style.display = 'none'; controlStart.style.display = 'inline-block'; sunflower.draw()}, false)
-    controlStart.addEventListener('click', function () {this.style.display = 'none'; controlPause.style.display = 'inline-block'; if (controlStep.value >= sunflower.limit) controlStep.value = 0; sunflower.draw()}, false)
-    controlBegin.addEventListener('click', () => {controlStep.value = 0; sunflower.draw()}, false)
-    controlEnd.addEventListener('click', () => {controlStep.value = sunflower.limit; sunflower.draw()}, false)
+    controlStep.addEventListener('change', event => {sunflower.step = event.target.value})
+    controlStep.addEventListener('input', event => {sunflower.step = event.target.value})
+
+    controlStart.addEventListener('click', () => {
+      controlStart.style.display = 'none'
+      controlPause.style.display = 'inline-block'
+      if (controlStep.value == controlStep.max) controlStep.value = 0
+      timer = setInterval(() => {
+        sunflower.step = controlStep.value++
+        if (controlStep.value == controlStep.max) {
+          clearInterval(timer)
+          controlPause.style.display = 'none'
+          controlStart.style.display = 'inline-block'
+          sunflower.step = sunflower.limit
+        }
+      }, 20)
+    })
+
+    controlPause.addEventListener('click', () => {
+      clearInterval(timer)
+      controlPause.style.display = 'none'
+      controlStart.style.display = 'inline-block'
+    })
+
+    controlBegin.addEventListener('click', () => {
+      controlStep.value = 0
+      sunflower.step = 0;
+    })
+
+    controlEnd.addEventListener('click', () => {
+      clearInterval(timer)
+      controlPause.style.display = 'none'
+      controlStart.style.display = 'inline-block'
+      controlStep.value = controlStep.max
+      sunflower.step = sunflower.limit
+    })
 
     sunflower.draw()
   }
 }
 
 class Sunflower {
-  constructor(radius, scale) {
-    this.radius = radius
-    this.scale  = scale
-    this.limit  = Math.floor(Math.pow(radius/scale, 2))
-    this.step   = document.getElementById('controlStep')
-    this.start  = document.getElementById('controlStart')
-    this.pause  = document.getElementById('controlPause')
-    this.canvas = document.getElementById('canvas')
-    this.ctx    = canvas.getContext('2d')
+  constructor(canvas, scale) {
+    this._canvas = canvas
+    this._scale  = scale
+    this._radius = Math.floor(0.94*Math.min(this._canvas.width, this._canvas.height)/2)
+    this._limit  = Math.floor(Math.pow(this._radius/this._scale, 2))
+    this._step   = Math.floor(0.38 * this._limit)
+    this._ctx    = this._canvas.getContext('2d')
+  }
+
+  get step() {
+    return this._step;
+  }
+
+  set step(τ) {
+    this._step = Math.max(0, Math.min(Math.floor(τ), this._limit))
+    this.draw()
+  }
+
+  get limit() {
+    return this._limit
   }
 
   draw() {
-    if (this.step.value > this.limit) {
-        this.step.value = this.limit
+    this._ctx.save()
+    this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height)
+    this._ctx.translate(this._canvas.width/2, this._canvas.height/2)
+
+    this._ctx.fillStyle   = 'rgb(128, 128, 0)'
+    this._ctx.strokeStyle = 'rgb(64, 96, 0)'
+    this._ctx.lineWidth = this._scale + (this._scale / 2 * this._step / this._limit)
+    this._ctx.beginPath()
+    this._ctx.arc(0, 0, this._scale * (1 + Math.sqrt(this._step)), 0, 2*Math.PI, false)
+    this._ctx.fill()
+    this._ctx.stroke()
+    this._ctx.closePath()
+
+    this._ctx.strokeStyle = 'rgb(16, 64, 0)'
+    this._ctx.fillStyle   = 'rgb(200, 200, 0)'
+    this._ctx.lineCap     = 'square'
+
+    for (let seed = 0; seed <= this._step; seed++) {
+        this.place(seed, this._step)
     }
+    this._ctx.restore()
 
-    this.ctx.save()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.ctx.translate(this.canvas.width/2, this.canvas.height/2)
-
-    this.ctx.fillStyle   = 'rgb(128, 128, 0)'
-    this.ctx.strokeStyle = 'rgb(64, 96, 0)'
-    this.ctx.lineWidth = this.scale + (this.scale / 2 * this.step.value / this.limit)
-    this.ctx.beginPath()
-    this.ctx.arc(0, 0, this.scale * (1 + Math.sqrt(this.step.value)), 0, 2*Math.PI, false)
-    this.ctx.fill()
-    this.ctx.stroke()
-    this.ctx.closePath()
-
-    this.ctx.strokeStyle = 'rgb(16, 64, 0)'
-    this.ctx.fillStyle   = 'rgb(200, 200, 0)'
-    this.ctx.lineCap     = 'square'
-
-    for (let seed = 0; seed <= this.step.value; seed++) {
-        this.place(seed, this.step.value)
-    }
-    this.ctx.restore()
-
-    if (parseInt(this.step.value) < parseInt(this.step.max)) {
-        if (this.start.style.display == 'none') {
-            this.step.value++
-            setTimeout( () => sunflower.draw(), 20)
-        }
-    }
-    else {
-        this.pause.style.display = 'none'
-        this.start.style.display = 'inline-block'
-    }
+    // if (parseInt(this._step) < parseInt(this._step.max)) {
+    //     if (this._start.style.display == 'none') {
+    //         this._step++
+    //         setTimeout( () => sunflower.draw(), 20)
+    //     }
+    // }
+    // else {
+    //     this._pause.style.display = 'none'
+    //     this._start.style.display = 'inline-block'
+    // }
   }
 
   place(seed, frame) {
-      this.ctx.save()
+      this._ctx.save()
       const φ_radians = Math.PI * (1 + Math.sqrt(5))
-      const ρ    = this.scale * Math.sqrt(frame-seed)
-      const size = this.scale + (this.scale/2 * (frame-seed) / this.limit)
+      const ρ    = this._scale * Math.sqrt(frame-seed)
+      const size = this._scale + (this._scale/2 * (frame-seed) / this._limit)
 
-      this.ctx.lineWidth = size/3
-      this.ctx.rotate(seed * φ_radians)
-      this.ctx.beginPath()
-      this.ctx.moveTo(ρ-size/2,        0)
-      this.ctx.lineTo(ρ,          size/2)
-      this.ctx.lineTo(ρ+size/2,        0)
-      this.ctx.lineTo(ρ,         -size/2)
-      this.ctx.lineTo(ρ-size/2,        0)
-      this.ctx.fill()
-      this.ctx.stroke()
-      this.ctx.restore()
+      this._ctx.lineWidth = size/3
+      this._ctx.rotate(seed * φ_radians)
+      this._ctx.beginPath()
+      this._ctx.moveTo(ρ-size/2,        0)
+      this._ctx.lineTo(ρ,          size/2)
+      this._ctx.lineTo(ρ+size/2,        0)
+      this._ctx.lineTo(ρ,         -size/2)
+      this._ctx.lineTo(ρ-size/2,        0)
+      this._ctx.fill()
+      this._ctx.stroke()
+      this._ctx.restore()
   }
 
 }

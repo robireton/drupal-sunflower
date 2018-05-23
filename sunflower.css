@@ -1,4 +1,4 @@
-article#sunflower {
+#sunflower {
     display: block;
     margin: 0;
     padding: 0 0 2em 0;
@@ -6,23 +6,25 @@ article#sunflower {
     position: relative;
 }
 
-article#sunflower canvas {
+#sunflower canvas {
     margin: 2em auto 0 auto;
 }
 
-article#sunflower input#controlStep {
+#controlStep {
     text-align: center;
-    display: none;
+    display: block;
     margin: auto;
+    width: 100%;
 }
 
-article#sunflower div#buttons {
+.buttons {
     text-align: center;
-    /*display: none;*/
-    margin: auto;
+    margin-top: 1em;
+    margin: 1em auto;
+    width: 100%;
 }
 
-article#sunflower div#buttons img {
+.buttons img {
     display: inline-block;
     margin-left: 24px;
     margin-right: 24px;
@@ -34,11 +36,15 @@ article#sunflower div#buttons img {
     transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
 }
 
-article#sunflower div#buttons img:hover {
+.buttons img:hover {
     border: 1px solid rgba(0, 0, 0, 1);
     border-radius: 6px;
     box-shadow: 0 0 5px #33CC66;
     -moz-transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
     -webkit-transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
     transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
+}
+
+#controlPause {
+  display: none;
 }
