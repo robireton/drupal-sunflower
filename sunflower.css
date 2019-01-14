@@ -18,16 +18,14 @@
 }
 
 .buttons {
+    display: flex;
+    justify-content: space-between;
     text-align: center;
-    margin-top: 1em;
     margin: 1em auto;
-    width: 100%;
+    width: 62%;
 }
 
 .buttons img {
-    display: inline-block;
-    margin-left: 24px;
-    margin-right: 24px;
     padding: 0 6px;
     border: 1px solid rgba(0, 0, 0, 0.38);
     border-radius: 6px;
@@ -39,12 +37,8 @@
 .buttons img:hover {
     border: 1px solid rgba(0, 0, 0, 1);
     border-radius: 6px;
-    box-shadow: 0 0 5px #33CC66;
+    box-shadow: 0 0 5px #93B778;
     -moz-transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
     -webkit-transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
     transition: border 0.33s ease-out, box-shadow 0.33s ease-out;
-}
-
-#controlPause {
-  display: none;
 }
